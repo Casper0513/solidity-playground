@@ -28,6 +28,7 @@ contract Application is SingleSignOn {
         ) public verifyLastTXTime(session, ticket) verifyUser(session, ticket) {
         
         futureTicketHash[msg.sender][session] = userFutureTicket;
+		lastTXTime[msg.sender][session] = now;
     }
     
 }
