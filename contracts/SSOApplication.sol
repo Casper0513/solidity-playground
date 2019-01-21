@@ -1,18 +1,19 @@
 pragma solidity ^0.4.24;
 
 import "./SingleSignOn.sol";
-
 contract Application is SingleSignOn {
     
-    uint16 inactiveLogoutTime = 2700; // log out if inactive for 45 minutes.
+    uint16 sessionExpireTime = 2700; // log out if inactive for 45 minutes.
     
     mapping(address => mapping(uint256 => uint256)) lastTXTime;
     
-    modifier verifyLastTXTime(uint256 session, bytes32 ticket) {
-        if(now - lastTXTime[msg.sender][session] >= inactiveLogoutTime) {
+    modifier checkSession(uint256 session, bytes32 ticket) {
+        if(now - lastTXTime[msg.sender][session] >= sessionExpireTime) {
             logout(session, ticket);
             return;
         }
+        
+        lastTXTime[msg.sender][session] = now;
         _;
     }
     
@@ -25,10 +26,9 @@ contract Application is SingleSignOn {
         uint256 session, 
         bytes32 ticket, 
         bytes32 userFutureTicket
-        ) public verifyLastTXTime(session, ticket) verifyUser(session, ticket) {
+        ) public checkSession(session, ticket) verifyUser(session, ticket) {
         
         futureTicketHash[msg.sender][session] = userFutureTicket;
-		lastTXTime[msg.sender][session] = now;
     }
     
 }
